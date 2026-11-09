@@ -1,0 +1,2 @@
+const USER_STATUS = Object.freeze({ INVITED: 'INVITED', ACTIVE: 'ACTIVE', SUSPENDED: 'SUSPENDED', INACTIVE: 'INACTIVE' });
+module.exports = { USER_STATUS };

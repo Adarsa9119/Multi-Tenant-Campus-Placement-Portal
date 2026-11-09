@@ -1,0 +1,23 @@
+const router = require('express').Router();
+const c = require('../controllers/placementDriveController');
+const el = require('../controllers/eligibilityController');
+const v = require('../validators/driveValidators');
+const validate = require('../middleware/validateRequest');
+const authenticate = require('../middleware/authenticate');
+const authorizeRole = require('../middleware/authorizeRole');
+const tenantContext = require('../middleware/tenantContext');
+const authorizeTenant = require('../middleware/authorizeTenant');
+const PlacementDrive = require('../models/PlacementDrive');
+
+const own = authorizeTenant(PlacementDrive, { name: 'PlacementDrive' });
+router.use(authenticate);
+router.post('/', authorizeRole('TPO'), tenantContext, v.create, validate, c.create);
+router.get('/', authorizeRole('TPO', 'RECRUITER'), c.list);
+router.get('/:driveId/eligibility', authorizeRole('TPO'), tenantContext, (req, res, next) => { req.params.id = req.params.driveId; next(); }, own, el.forDrive);
+router.get('/:id', authorizeRole('TPO', 'RECRUITER'), c.get);
+router.put('/:id', authorizeRole('TPO'), tenantContext, own, v.update, validate, c.update);
+router.post('/:id/approve', authorizeRole('TPO'), tenantContext, own, c.approve);
+router.post('/:id/publish', authorizeRole('TPO'), tenantContext, own, c.publish);
+router.post('/:id/close', authorizeRole('TPO'), tenantContext, own, c.close);
+router.post('/:id/suspend', authorizeRole('TPO'), tenantContext, own, c.suspend);
+module.exports = router;

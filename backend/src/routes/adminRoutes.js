@@ -1,0 +1,27 @@
+const router = require('express').Router();
+const c = require('../controllers/adminController');
+const v = require('../validators/collegeValidators');
+const validate = require('../middleware/validateRequest');
+const authenticate = require('../middleware/authenticate');
+const authorizeRole = require('../middleware/authorizeRole');
+
+router.use(authenticate, authorizeRole('SUPER_ADMIN'));
+router.get('/dashboard', c.dashboard);
+router.get('/college-registrations', c.listRegistrations);
+router.get('/college-registrations/:id', c.getRegistration);
+router.post('/college-registrations/:id/review', v.decision, validate, c.review);
+router.post('/college-registrations/:id/approve', v.decision, validate, c.approve);
+router.post('/college-registrations/:id/reject', v.decision, validate, c.reject);
+router.get('/tenants', c.listTenants);
+router.post('/tenants/:id/activate', c.setTenantStatus('ACTIVE'));
+router.post('/tenants/:id/deactivate', c.setTenantStatus('INACTIVE'));
+router.get('/tpos', c.listTpos);
+router.post('/tpos', v.tpoInvite, validate, c.inviteTpo);
+router.post('/tpos/:id/status', v.status, validate, c.setTpoStatus);
+router.get('/platform-admins', c.listAdmins);
+router.post('/platform-admins', v.adminInvite, validate, c.inviteAdmin);
+router.post('/platform-admins/:id/status', v.status, validate, c.setAdminStatus);
+router.get('/students-overview', c.studentsOverview);
+router.get('/settings', c.getSettings);
+router.put('/settings', c.updateSettings);
+module.exports = router;

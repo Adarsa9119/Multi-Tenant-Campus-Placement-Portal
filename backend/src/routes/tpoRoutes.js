@@ -1,0 +1,25 @@
+const router = require('express').Router();
+const tpo = require('../controllers/tpoController');
+const st = require('../controllers/studentController');
+const sv = require('../validators/studentValidators');
+const validate = require('../middleware/validateRequest');
+const authenticate = require('../middleware/authenticate');
+const authorizeRole = require('../middleware/authorizeRole');
+const tenantContext = require('../middleware/tenantContext');
+const authorizeTenant = require('../middleware/authorizeTenant');
+const { csvUpload } = require('../middleware/uploadMiddleware');
+const Student = require('../models/Student');
+const Department = require('../models/Department');
+
+router.use(authenticate, authorizeRole('TPO'), tenantContext);
+router.get('/dashboard', tpo.dashboard);
+router.get('/departments', tpo.listDepartments);
+router.post('/departments', sv.department, validate, tpo.createDepartment);
+router.put('/departments/:id', authorizeTenant(Department, { name: 'Department' }), tpo.updateDepartment);
+router.get('/students', st.list);
+router.post('/students', sv.create, validate, st.create);
+router.post('/students/bulk', csvUpload, st.bulk);
+router.get('/students/:id', authorizeTenant(Student, { name: 'Student' }), st.get);
+router.put('/students/:id', authorizeTenant(Student, { name: 'Student' }), sv.update, validate, st.update);
+router.post('/students/:id/verify', authorizeTenant(Student, { name: 'Student' }), sv.verify, validate, st.verify);
+module.exports = router;

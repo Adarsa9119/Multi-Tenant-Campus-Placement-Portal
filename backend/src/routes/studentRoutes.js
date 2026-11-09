@@ -1,0 +1,20 @@
+const router = require('express').Router();
+const st = require('../controllers/studentController');
+const el = require('../controllers/eligibilityController');
+const sv = require('../validators/studentValidators');
+const validate = require('../middleware/validateRequest');
+const authenticate = require('../middleware/authenticate');
+const authorizeRole = require('../middleware/authorizeRole');
+const tenantContext = require('../middleware/tenantContext');
+const { studentSelf } = require('../middleware/authorizeResource');
+
+router.use(authenticate, authorizeRole('STUDENT'), tenantContext, studentSelf);
+router.get('/dashboard', st.dashboard);
+router.get('/profile', st.profile);
+router.put('/profile', sv.profile, validate, st.updateProfile);
+router.get('/placement-status', st.placementStatus);
+router.get('/drives', st.eligibleDrives);
+router.get('/drives/:id', st.driveDetails);
+router.get('/eligibility', el.mine);
+router.get('/eligibility/:driveId', el.mineForDrive);
+module.exports = router;
