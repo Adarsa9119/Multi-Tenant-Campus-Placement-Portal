@@ -23,13 +23,20 @@ const env = {
   SEED_SUPER_ADMIN_NAME: process.env.SEED_SUPER_ADMIN_NAME || 'Platform Admin',
   SEED_SUPER_ADMIN_EMAIL: process.env.SEED_SUPER_ADMIN_EMAIL || 'padhuncmrwf@gmail.com',
   SEED_DEMO_PASSWORD: process.env.SEED_DEMO_PASSWORD || 'Demo@12345',
+  BREVO_API_KEY: process.env.BREVO_API_KEY || '',
+  BREVO_SENDER_NAME: process.env.BREVO_SENDER_NAME || 'Campus Placement Portal',
+  BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || '',
+  R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID || '',
+  R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID || '',
+  R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY || '',
+  R2_BUCKET_NAME: process.env.R2_BUCKET_NAME || '',
 };
 if (env.NODE_ENV !== 'test') {
   for (const k of ['MONGO_URI', 'JWT_SECRET']) {
     if (!env[k]) throw new Error(`Missing required environment variable: ${k}`);
   }
-  if (env.NODE_ENV === 'production' && !env.SMTP_HOST) {
-    throw new Error('Missing required environment variable: SMTP_HOST (email delivery is required in production)');
+  if (env.NODE_ENV === 'production' && !env.BREVO_API_KEY && !env.SMTP_HOST) {
+    throw new Error('Missing required email configuration: A real email provider (BREVO_API_KEY or SMTP_HOST) must be configured in production');
   }
   if (env.NODE_ENV === 'production' && !process.env.OTP_PEPPER) {
     throw new Error('Missing required environment variable: OTP_PEPPER (use a separate random secret in production)');

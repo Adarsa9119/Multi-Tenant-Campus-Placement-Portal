@@ -19,10 +19,48 @@ function getTransport() {
   });
   return transporter;
 }
+function parseSenderEmail(fromStr) {
+  if (!fromStr) return '';
+  const match = fromStr.match(/<([^>]+)>/);
+  return match ? match[1] : fromStr.trim();
+}
+
+async function sendViaBrevo({ to, subject, text }) {
+  const senderEmail = env.BREVO_SENDER_EMAIL || parseSenderEmail(env.SMTP_FROM) || 'no-reply@example.com';
+  const senderName = env.BREVO_SENDER_NAME || 'Campus Placement Portal';
+
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'api-key': env.BREVO_API_KEY,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { name: senderName, email: senderEmail },
+      to: [{ email: to }],
+      subject,
+      textContent: text,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Brevo HTTPS API delivery failed (HTTP ${res.status}): ${errText || res.statusText}`);
+  }
+  return { delivery: 'brevo' };
+}
+
 async function send({ to, subject, text }) {
   if (env.NODE_ENV === 'test') return { skipped: true };
   try {
-    return await getTransport().sendMail({ from: env.SMTP_FROM, to, subject, text });
+    if (env.BREVO_API_KEY) {
+      return await sendViaBrevo({ to, subject, text });
+    }
+    if (env.SMTP_HOST) {
+      return await getTransport().sendMail({ from: env.SMTP_FROM, to, subject, text });
+    }
+    throw new Error('SMTP_HOST must be configured to send email');
   } catch (e) {
     console.error('Mail delivery failed:', e.message);
     throw e;
